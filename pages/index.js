@@ -1,10 +1,26 @@
 import Head from 'next/head';
 import React, { useState } from 'react';
 import { coinList } from '../lib/data';
+import { COIN_MOCKUP } from '../lib/coin-mockup';
 
 export default function Home() {
   const [search, setSearch] = useState('');
   const [items, setItem] = useState(coinList);
+
+  useState(() => {
+    const getCoinDataItems = coinList.map((v) => {
+      const coinInfo = COIN_MOCKUP[`THB_${v.name}`];
+      return {
+        ...v,
+        value: coinInfo.last,
+        coin: v.coin
+      };
+    });
+    console.log(
+      '🚀 ~ file: index.js ~ line 29 ~ useState ~ getCoinDataItems',
+      getCoinDataItems
+    );
+  }, []);
 
   const onChangeSearch = (e) => {
     const findArray = coinList.filter((v) =>
