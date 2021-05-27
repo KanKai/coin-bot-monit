@@ -1,10 +1,10 @@
-import Link from 'next/link';
+import { Navbar } from '../components/Navbar';
 import '../styles/globals.css';
 
 function MyApp({ Component, pageProps }) {
   return (
-    <div className="mx-auto my-8 w-9/12">
-      <header>
+    <div>
+      {/* <header>
         <h1 className="text-6xl font-bold text-center">My Coin Kub</h1>
         <nav className="my-4">
           <ul className="flex flex-row justify-center space-x-4">
@@ -18,7 +18,8 @@ function MyApp({ Component, pageProps }) {
             </li>
           </ul>
         </nav>
-      </header>
+      </header> */}
+      <Navbar />
 
       <Component {...pageProps} />
     </div>
