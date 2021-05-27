@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import { coinList } from '../lib/data';
 
 export default function Home() {
   return (
@@ -12,6 +13,17 @@ export default function Home() {
       <main>
         <h1>My Coin Kub</h1>
       </main>
+
+      <div>
+        {coinList.map((coin) => (
+          <div key={coin.name}>
+            <div>{coin.name}</div>
+            <div>{coin.coin}</div>
+            <div>{coin.cost}</div>
+            <div>{coin.value}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
