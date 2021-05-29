@@ -52,6 +52,7 @@ export default function Home() {
                 <i className="fa fa-search absolute right-3 top-4 text-gray-300"></i>
               </div>
               <div>{search}</div>
+              <div>{process.env.environment}</div>
               {items.map((coin) => (
                 <ListMyCoinItem key={coin.name} {...coin} />
               ))}
