@@ -11,9 +11,11 @@ function Home() {
   const [items, setItem] = useState([]);
 
   useState(async () => {
-    const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_BITKUB_API}/market/ticker`
-    );
+    const http = axios.create({
+      baseURL: process.env.NEXT_PUBLIC_BITKUB_API,
+      headers: { 'Cache-Control': 'no-cache' },
+    });
+    const res = await http.get('/market/ticker', { cache: false });
     const json = await res.data;
     const getCoinDataItems = coinList.map((v) => {
       const coinInfo = json[`THB_${v.name}`];
