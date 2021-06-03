@@ -1,29 +1,50 @@
 import Head from 'next/head';
 import React, { useState } from 'react';
+import axios from 'axios';
+import { calculateCostProfit } from '../utils/helper';
 import { coinList } from '../lib/data';
 import { COIN_MOCKUP } from '../lib/coin-mockup';
 
-export default function Home() {
+function Home() {
   const [search, setSearch] = useState('');
-  const [items, setItem] = useState(coinList);
+  const [itemTemp, setItemTemp] = useState([]);
+  const [items, setItem] = useState([]);
 
-  useState(() => {
+  useState(async () => {
+    const res = await axios.get(
+      `${process.env.NEXT_PUBLIC_BITKUB_API}/market/ticker`
+    );
+    const json = await res.data;
     const getCoinDataItems = coinList.map((v) => {
-      const coinInfo = COIN_MOCKUP[`THB_${v.name}`];
+      const coinInfo = json[`THB_${v.name}`];
       return {
         ...v,
         value: coinInfo.last,
-        coin: v.coin
+        coin: v.coin,
       };
     });
-    console.log(
-      '🚀 ~ file: index.js ~ line 29 ~ useState ~ getCoinDataItems',
-      getCoinDataItems
-    );
+    const coinItems = getCoinDataItems.map((v) => {
+      const calCostProfit = calculateCostProfit(
+        v.cost,
+        v.buyFee,
+        v.sellFee,
+        v.coin,
+        v.value
+      );
+      return {
+        ...v,
+        costIncludeFee: calCostProfit.costIncludeFee,
+        costProfit: calCostProfit.costProfit,
+        priceSell: calCostProfit.priceSell,
+        calCostProfitPercent: calCostProfit.calCostProfitPercent,
+      };
+    });
+    setItem(coinItems);
+    setItemTemp(coinItems);
   }, []);
 
   const onChangeSearch = (e) => {
-    const findArray = coinList.filter((v) =>
+    const findArray = itemTemp.filter((v) =>
       v.name.toLowerCase().includes(e.target.value.toLowerCase())
     );
     setItem(findArray);
@@ -37,7 +58,6 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
       </Head>
-
       <div className="py-5 h-screen bg-gray-300 px-2">
         <div className="max-w-md mx-auto bg-gray-100 shadow-lg rounded-lg overflow-hidden md:max-w-lg">
           <div className="md:flex">
@@ -52,7 +72,7 @@ export default function Home() {
                 <i className="fa fa-search absolute right-3 top-4 text-gray-300"></i>
               </div>
               {items.map((coin) => (
-                <ListMyCoinItem key={coin.name} {...coin} />
+                <ListMyCoinItem key={`${coin.name}-${coin.cost}`} {...coin} />
               ))}
             </div>
           </div>
@@ -62,29 +82,57 @@ export default function Home() {
   );
 }
 
-function ListMyCoinItem({ name, value, coin, cost, image }) {
+function ListMyCoinItem({
+  name,
+  value,
+  coin,
+  image,
+  costProfit,
+  costIncludeFee,
+  priceSell,
+  calCostProfitPercent,
+}) {
   return (
     <ul>
       <li className="flex justify-between items-center bg-white mt-2 p-2 hover:shadow-lg rounded cursor-pointer transition">
         <div className="flex ml-2 items-center flex-1">
           <img src={image} width="30" className="rounded h-8" />
-          <div className="flex flex-col ml-2">
+          <div className="flex flex-col self-end ml-2">
             <span className="font-medium text-black">{name}</span>
-            <span className="text-sm text-gray-400 truncate w-32">
-              Cost: {cost.toLocaleString()}
+            <span className="text-xs text-gray-400 truncate w-32">
+              Cost: {costIncludeFee.toLocaleString()}
             </span>
-            <span className="text-sm text-gray-400 truncate w-32">
+            <span className="text-xs text-gray-400 truncate w-32">
               Avail: {coin}
             </span>
-            <span className="text-sm text-gray-400 truncate w-32">
+            <span className="text-xs text-gray-400 truncate w-32">
               THB: {value.toLocaleString()}
+              {name}
             </span>
           </div>
         </div>
-        <div className="flex flex-col items-center">
-          <span className="text-green-400">+{coin.toLocaleString()}฿</span>
+        <div className="flex flex-col self-end items-end">
+          <span className="text-gray-400 text-xs">
+            {priceSell.toLocaleString()}฿
+          </span>
+          <span
+            className={`${
+              costProfit < 0 ? 'text-red-400' : 'text-green-400'
+            } text-xs`}
+          >
+            {costProfit.toLocaleString()}฿
+          </span>
+          <span
+            className={`${
+              calCostProfitPercent < 0 ? 'text-red-400' : 'text-green-400'
+            } text-xs`}
+          >
+            {calCostProfitPercent.toFixed(3)}%
+          </span>
         </div>
       </li>
     </ul>
   );
 }
+
+export default Home;
